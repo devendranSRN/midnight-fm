@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Midnight FM — Studio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg-1:#0e0a08;
+    --bg-2:#1a120d;
+    --bg-3:#2a1c14;
+    --cream:#f5e9d4;
+    --cream-dim:#b8a98e;
+    --cream-dimmer:#7a6f5c;
+    --amber:#d97757;
+    --amber-bright:#f08a5d;
+    --gold:#c8a572;
+    --danger:#c95252;
+    --line:rgba(245,233,212,0.08);
+    --line-strong:rgba(245,233,212,0.15);
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{min-height:100%;background:var(--bg-1);color:var(--cream);font-family:'Outfit',sans-serif;font-weight:300;letter-spacing:0.01em}
+  body{
+    background:
+      radial-gradient(ellipse at top, rgba(217,119,87,0.12), transparent 60%),
+      linear-gradient(180deg, var(--bg-1) 0%, var(--bg-2) 100%);
+    min-height:100vh;
+    position:relative;
+  }
+  body::before{
+    content:"";position:fixed;inset:0;pointer-events:none;z-index:1;opacity:0.05;
+    background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    mix-blend-mode:overlay;
+  }
+
+  .wrap{max-width:1080px;margin:0 auto;padding:48px 28px 80px;position:relative;z-index:2}
+
+  /* Header */
+  .topbar{
+    display:flex;align-items:center;justify-content:space-between;
+    margin-bottom:48px;
+    padding-bottom:24px;
+    border-bottom:1px solid var(--line);
+  }
+  .brand{display:flex;align-items:center;gap:14px}
+  .brand-mark{
+    width:42px;height:42px;border-radius:50%;
+    background:radial-gradient(circle at 30% 30%, var(--amber-bright), var(--amber) 50%, #5a2e1f 100%);
+    box-shadow:0 0 24px rgba(217,119,87,0.4), inset 0 0 12px rgba(0,0,0,0.4);
+    position:relative;
+  }
+  .brand-mark::after{
+    content:"";position:absolute;inset:38%;border-radius:50%;
+    background:var(--bg-1);box-shadow:inset 0 0 4px rgba(0,0,0,0.8);
+  }
+  .brand-text{
+    font-family:'Fraunces',serif;font-size:22px;font-weight:500;
+    letter-spacing:0.02em;font-style:italic;
+  }
+  .brand-text span{color:var(--amber);font-style:normal;font-weight:600}
+  .studio-tag{
+    font-size:11px;letter-spacing:0.25em;text-transform:uppercase;
+    color:var(--amber);
+    padding:6px 14px;border:1px solid rgba(217,119,87,0.3);border-radius:20px;
+  }
+
+  /* Login screen */
+  .gate{
+    position:fixed;inset:0;
+    background:linear-gradient(180deg, var(--bg-1), var(--bg-2));
+    display:flex;align-items:center;justify-content:center;
+    z-index:100;
+    padding:24px;
+  }
+  .gate-card{
+    width:100%;max-width:380px;
+    text-align:center;
+    padding:48px 36px;
+    background:rgba(245,233,212,0.02);
+    border:1px solid var(--line);
+    border-radius:16px;
+  }
+  .gate-title{
+    font-family:'Fraunces',serif;font-size:32px;font-weight:500;font-style:italic;
+    margin-bottom:8px;
+  }
+  .gate-sub{font-size:13px;color:var(--cream-dim);margin-bottom:32px;letter-spacing:0.05em}
+  .gate-input{
+    width:100%;
+    padding:14px 18px;
+    background:var(--bg-1);
+    border:1px solid var(--line-strong);
+    border-radius:8px;
+    color:var(--cream);
+    font-family:'Outfit',sans-serif;
+    font-size:15px;
+    letter-spacing:0.1em;
+    text-align:center;
+    outline:none;
+    transition:border-color 0.2s;
+  }
+  .gate-input:focus{border-color:var(--amber)}
+  .gate-btn{
+    width:100%;
+    margin-top:14px;
+    padding:14px;
+    background:var(--amber);
+    border:none;
+    border-radius:8px;
+    color:var(--bg-1);
+    font-family:'Outfit',sans-serif;
+    font-size:13px;
+    font-weight:500;
+    letter-spacing:0.2em;
+    text-transform:uppercase;
+    cursor:pointer;
+    transition:all 0.2s;
+  }
+  .gate-btn:hover{background:var(--amber-bright);transform:translateY(-1px)}
+  .gate-error{color:var(--danger);font-size:12px;margin-top:12px;letter-spacing:0.05em;min-height:16px}
+
+  /* Main layout */
+  .main-grid{
+    display:grid;
+    grid-template-columns:1fr 1.2fr;
+    gap:40px;
+    align-items:start;
+  }
+  @media (max-width:880px){.main-grid{grid-template-columns:1fr}}
+
+  .panel{
+    background:linear-gradient(180deg, rgba(245,233,212,0.02), transparent);
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:32px 28px;
+  }
+  .panel-head{
+    margin-bottom:24px;
+    padding-bottom:18px;
+    border-bottom:1px solid var(--line);
+  }
+  .panel-title{
+    font-family:'Fraunces',serif;
+    font-size:24px;font-weight:500;font-style:italic;
+    margin-bottom:6px;
+  }
+  .panel-sub{font-size:12px;color:var(--cream-dimmer);letter-spacing:0.1em;text-transform:uppercase}
+
+  /* Form */
+  .field{margin-bottom:18px}
+  .label{
+    display:block;
+    font-size:11px;
+    letter-spacing:0.2em;
+    text-transform:uppercase;
+    color:var(--cream-dim);
+    margin-bottom:8px;
+  }
+  .input{
+    width:100%;
+    padding:12px 14px;
+    background:var(--bg-1);
+    border:1px solid var(--line-strong);
+    border-radius:7px;
+    color:var(--cream);
+    font-family:'Outfit',sans-serif;
+    font-size:14px;
+    outline:none;
+    transition:border-color 0.2s;
+  }
+  .input:focus{border-color:var(--amber)}
+  .input::placeholder{color:var(--cream-dimmer)}
+  .hint{
+    font-size:11px;
+    color:var(--cream-dimmer);
+    margin-top:6px;
+    font-style:italic;
+    letter-spacing:0.02em;
+  }
+
+  /* URL type indicator */
+  .url-detect{
+    display:flex;align-items:center;gap:8px;
+    margin-top:8px;
+    font-size:11px;
+    letter-spacing:0.15em;
+    text-transform:uppercase;
+    color:var(--cream-dimmer);
+    min-height:18px;
+  }
+  .url-detect.yt{color:#ff5252}
+  .url-detect.mp3{color:var(--amber)}
+  .url-detect-dot{
+    width:6px;height:6px;border-radius:50%;
+    background:currentColor;
+  }
+
+  .btn-row{display:flex;gap:10px;margin-top:8px}
+  .btn{
+    padding:13px 22px;
+    background:var(--amber);
+    border:none;border-radius:8px;
+    color:var(--bg-1);
+    font-family:'Outfit',sans-serif;
+    font-size:12px;font-weight:500;letter-spacing:0.2em;text-transform:uppercase;
+    cursor:pointer;
+    transition:all 0.2s;
+    flex:1;
+  }
+  .btn:hover{background:var(--amber-bright);transform:translateY(-1px)}
+  .btn:disabled{opacity:0.4;cursor:not-allowed;transform:none}
+  .btn-ghost{
+    background:transparent;
+    border:1px solid var(--line-strong);
+    color:var(--cream);
+  }
+  .btn-ghost:hover{background:var(--line);transform:none}
+
+  /* Status message */
+  .status{
+    margin-top:14px;
+    padding:10px 14px;
+    border-radius:7px;
+    font-size:12px;
+    letter-spacing:0.05em;
+    text-align:center;
+    opacity:0;
+    transition:opacity 0.3s;
+  }
+  .status.show{opacity:1}
+  .status.success{background:rgba(217,119,87,0.15);color:var(--amber-bright);border:1px solid rgba(217,119,87,0.3)}
+  .status.error{background:rgba(201,82,82,0.15);color:var(--danger);border:1px solid rgba(201,82,82,0.3)}
+
+  /* Tracks list */
+  .tracks{max-height:560px;overflow-y:auto;padding-right:6px;margin-right:-6px}
+  .tracks::-webkit-scrollbar{width:4px}
+  .tracks::-webkit-scrollbar-track{background:transparent}
+  .tracks::-webkit-scrollbar-thumb{background:var(--line-strong);border-radius:2px}
+
+  .track-row{
+    display:grid;
+    grid-template-columns:24px 40px 1fr auto auto;
+    gap:12px;
+    align-items:center;
+    padding:12px 8px;
+    border-radius:8px;
+    margin-bottom:4px;
+    transition:background 0.2s;
+  }
+  .track-row:hover{background:rgba(245,233,212,0.03)}
+  .row-num{
+    font-family:'Fraunces',serif;font-style:italic;
+    font-size:13px;color:var(--cream-dimmer);
+    text-align:center;
+  }
+  .row-thumb{
+    width:40px;height:40px;border-radius:6px;
+    object-fit:cover;background:var(--bg-3);
+  }
+  .row-thumb-ph{
+    width:40px;height:40px;border-radius:6px;
+    background:linear-gradient(135deg, #3a2418, #1a120d);
+    display:flex;align-items:center;justify-content:center;
+    color:var(--amber);font-family:'Fraunces',serif;font-style:italic;font-size:16px;
+  }
+  .row-meta{min-width:0}
+  .row-title{
+    font-size:13px;color:var(--cream);
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+    margin-bottom:2px;
+  }
+  .row-artist{
+    font-size:11px;color:var(--cream-dim);
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  }
+  .row-badge{
+    font-size:9px;letter-spacing:0.15em;text-transform:uppercase;
+    color:var(--cream-dimmer);
+    padding:3px 8px;border:1px solid var(--line-strong);border-radius:20px;
+  }
+  .row-del{
+    background:none;border:none;
+    color:var(--cream-dimmer);
+    cursor:pointer;
+    padding:6px;
+    border-radius:50%;
+    transition:all 0.2s;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .row-del:hover{color:var(--danger);background:rgba(201,82,82,0.1)}
+  .row-del svg{width:16px;height:16px}
+
+  .empty-list{
+    text-align:center;padding:60px 20px;color:var(--cream-dimmer);
+  }
+  .empty-list-icon{
+    font-family:'Fraunces',serif;font-style:italic;font-size:48px;
+    color:var(--amber);opacity:0.4;margin-bottom:10px;
+  }
+
+  .count-pill{
+    display:inline-block;
+    padding:3px 10px;
+    background:rgba(217,119,87,0.15);
+    border:1px solid rgba(217,119,87,0.25);
+    border-radius:20px;
+    font-size:11px;color:var(--amber);
+    letter-spacing:0.1em;
+    margin-left:10px;
+  }
+</style>
+</head>
+<body>
+
+<!-- ==================== PASSWORD GATE ==================== -->
+<div class="gate" id="gate">
+  <div class="gate-card">
+    <div class="gate-title">Studio Access</div>
+    <div class="gate-sub">— Authorized listening only —</div>
+    <input type="password" class="gate-input" id="gateInput" placeholder="PASSPHRASE" autofocus>
+    <button class="gate-btn" id="gateBtn">Enter Studio</button>
+    <div class="gate-error" id="gateError"></div>
+  </div>
+</div>
+
+<!-- ==================== MAIN STUDIO ==================== -->
+<div class="wrap" id="studio" style="display:none">
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-mark"></div>
+      <div class="brand-text">Midnight <span>FM</span></div>
+    </div>
+    <div class="studio-tag">— Studio —</div>
+  </header>
+
+  <div class="main-grid">
+
+    <!-- Add Song Panel -->
+    <section class="panel">
+      <div class="panel-head">
+        <div class="panel-title">Add a track</div>
+        <div class="panel-sub">MP3 URL or YouTube link</div>
+      </div>
+
+      <div class="field">
+        <label class="label">Title</label>
+        <input type="text" class="input" id="fTitle" placeholder="e.g. Murugan Bhajan">
+      </div>
+
+      <div class="field">
+        <label class="label">Artist</label>
+        <input type="text" class="input" id="fArtist" placeholder="e.g. T.M. Soundararajan">
+      </div>
+
+      <div class="field">
+        <label class="label">Cover Image URL <span style="opacity:0.5;text-transform:none;letter-spacing:0">(optional)</span></label>
+        <input type="text" class="input" id="fCover" placeholder="https://...">
+        <div class="hint">Use any direct image link (jpg, png). Leave blank for a default cover.</div>
+      </div>
+
+      <div class="field">
+        <label class="label">Source URL</label>
+        <input type="text" class="input" id="fURL" placeholder="https://youtube.com/watch?v=... or https://...mp3">
+        <div class="url-detect" id="urlDetect">
+          <span>Paste an MP3 link or YouTube URL</span>
+        </div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-ghost" id="clearBtn">Clear</button>
+        <button class="btn" id="addBtn">Add Track</button>
+      </div>
+
+      <div class="status" id="status"></div>
+    </section>
+
+    <!-- Playlist Panel -->
+    <section class="panel">
+      <div class="panel-head">
+        <div class="panel-title">Current Queue<span class="count-pill" id="countPill">0</span></div>
+        <div class="panel-sub">Tap the × to remove</div>
+      </div>
+
+      <div class="tracks" id="tracks">
+        <div class="empty-list">
+          <div class="empty-list-icon">♪</div>
+          <div>No tracks yet</div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+</div>
+
+<!-- ==================== FIREBASE SDK ==================== -->
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+<script>
+/* ============================================================
+   STEP 1 — PASTE THE SAME FIREBASE CONFIG AS THE PUBLIC PAGE
+   ============================================================ */
+const firebaseConfig = {
+  apiKey: "AIzaSyCVBIu7nqxNH9YXzqLrLnjZ95vRKRVDZLc",
+  authDomain: "midnight-fm-b2018.firebaseapp.com",
+  databaseURL: "https://midnight-fm-b2018-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "midnight-fm-b2018",
+  storageBucket: "midnight-fm-b2018.firebasestorage.app",
+  messagingSenderId: "939233885242",
+  appId: "1:939233885242:web:68eca838547489e0ba0903",
+  measurementId: "G-2T3Y4K68HV"
+};
+
+/* ============================================================
+   STEP 2 — SET YOUR PASSWORD (change "midnight2026" to anything)
+   This is a simple client-side gate. Combined with the page
+   being unlinked on your Blogger, it's adequate for personal use.
+   ============================================================ */
+const STUDIO_PASSWORD = "Devendran26#";
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+/* ============================================================
+   PASSWORD GATE
+   ============================================================ */
+const gate = document.getElementById('gate');
+const studio = document.getElementById('studio');
+const gateInput = document.getElementById('gateInput');
+const gateBtn = document.getElementById('gateBtn');
+const gateError = document.getElementById('gateError');
+
+function tryEnter(){
+  if(gateInput.value === STUDIO_PASSWORD){
+    sessionStorage.setItem('mfm_studio', '1');
+    gate.style.display = 'none';
+    studio.style.display = 'block';
+  } else {
+    gateError.textContent = 'Incorrect passphrase';
+    gateInput.value = '';
+    setTimeout(() => gateError.textContent = '', 2400);
+  }
+}
+gateBtn.addEventListener('click', tryEnter);
+gateInput.addEventListener('keydown', (e) => { if(e.key === 'Enter') tryEnter(); });
+
+if(sessionStorage.getItem('mfm_studio') === '1'){
+  gate.style.display = 'none';
+  studio.style.display = 'block';
+}
+
+/* ============================================================
+   URL DETECTION
+   ============================================================ */
+function parseYouTubeID(url){
+  if(!url) return null;
+  const patterns = [
+    /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/v\/)([a-zA-Z0-9_-]{11})/,
+    /youtube\.com\/shorts\/([a-zA-Z0-9_-]{11})/
+  ];
+  for(const p of patterns){
+    const m = url.match(p);
+    if(m) return m[1];
+  }
+  return null;
+}
+function isMP3URL(url){
+  if(!url) return false;
+  return /\.(mp3|m4a|ogg|wav|aac|opus)(\?|$)/i.test(url) || /^https?:\/\//i.test(url);
+}
+
+/* ============================================================
+   FORM
+   ============================================================ */
+const fTitle = document.getElementById('fTitle');
+const fArtist = document.getElementById('fArtist');
+const fCover = document.getElementById('fCover');
+const fURL = document.getElementById('fURL');
+const urlDetect = document.getElementById('urlDetect');
+const status = document.getElementById('status');
+
+fURL.addEventListener('input', () => {
+  const url = fURL.value.trim();
+  const ytId = parseYouTubeID(url);
+  if(ytId){
+    urlDetect.className = 'url-detect yt';
+    urlDetect.innerHTML = '<span class="url-detect-dot"></span><span>YouTube detected — ID: ' + ytId + '</span>';
+    // Auto-suggest cover from YouTube thumbnail
+    if(!fCover.value.trim()){
+      fCover.placeholder = 'https://img.youtube.com/vi/' + ytId + '/maxresdefault.jpg (auto)';
+    }
+  } else if(isMP3URL(url)){
+    urlDetect.className = 'url-detect mp3';
+    urlDetect.innerHTML = '<span class="url-detect-dot"></span><span>Direct audio URL</span>';
+  } else {
+    urlDetect.className = 'url-detect';
+    urlDetect.innerHTML = '<span>Paste an MP3 link or YouTube URL</span>';
+  }
+});
+
+function showStatus(msg, type){
+  status.textContent = msg;
+  status.className = 'status show ' + type;
+  setTimeout(() => status.classList.remove('show'), 3000);
+}
+
+document.getElementById('clearBtn').addEventListener('click', () => {
+  fTitle.value = ''; fArtist.value = ''; fCover.value = ''; fURL.value = '';
+  urlDetect.className = 'url-detect';
+  urlDetect.innerHTML = '<span>Paste an MP3 link or YouTube URL</span>';
+});
+
+document.getElementById('addBtn').addEventListener('click', async () => {
+  const title = fTitle.value.trim();
+  const artist = fArtist.value.trim();
+  let cover = fCover.value.trim();
+  const url = fURL.value.trim();
+
+  if(!title){ showStatus('Title is required', 'error'); return; }
+  if(!url){ showStatus('URL is required', 'error'); return; }
+
+  const ytId = parseYouTubeID(url);
+  if(!ytId && !isMP3URL(url)){
+    showStatus('URL must be a YouTube link or direct audio file', 'error');
+    return;
+  }
+
+  // Auto-fill YouTube thumbnail if no cover
+  if(ytId && !cover){
+    cover = 'https://img.youtube.com/vi/' + ytId + '/maxresdefault.jpg';
+  }
+
+  try {
+    const order = Date.now();
+    await db.ref('playlist').push({
+      title, artist: artist || 'Unknown', cover, url, order
+    });
+    showStatus('✓ Track added to the queue', 'success');
+    document.getElementById('clearBtn').click();
+  } catch (err) {
+    showStatus('Failed: ' + err.message, 'error');
+  }
+});
+
+/* ============================================================
+   LIVE PLAYLIST
+   ============================================================ */
+const tracksEl = document.getElementById('tracks');
+const countPill = document.getElementById('countPill');
+
+function escapeHTML(s){
+  return String(s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+db.ref('playlist').on('value', snap => {
+  const data = snap.val();
+  const list = [];
+  if(data){
+    Object.keys(data).forEach(k => list.push({ id:k, ...data[k] }));
+    list.sort((a,b) => (a.order||0) - (b.order||0));
+  }
+  countPill.textContent = list.length;
+
+  if(list.length === 0){
+    tracksEl.innerHTML = `
+      <div class="empty-list">
+        <div class="empty-list-icon">♪</div>
+        <div>No tracks yet</div>
+      </div>`;
+    return;
+  }
+
+  tracksEl.innerHTML = list.map((t, i) => {
+    const isYT = parseYouTubeID(t.url) !== null;
+    const cover = t.cover
+      ? `<img src="${escapeHTML(t.cover)}" class="row-thumb" alt="" onerror="this.outerHTML='<div class=row-thumb-ph>♪</div>'">`
+      : `<div class="row-thumb-ph">♪</div>`;
+    return `
+      <div class="track-row">
+        <div class="row-num">${String(i+1).padStart(2,'0')}</div>
+        ${cover}
+        <div class="row-meta">
+          <div class="row-title">${escapeHTML(t.title)}</div>
+          <div class="row-artist">${escapeHTML(t.artist || 'Unknown')}</div>
+        </div>
+        <div class="row-badge">${isYT?'YT':'MP3'}</div>
+        <button class="row-del" data-id="${t.id}" title="Remove">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>`;
+  }).join('');
+
+  tracksEl.querySelectorAll('.row-del').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      if(!confirm('Remove this track from the queue?')) return;
+      try {
+        await db.ref('playlist/' + btn.dataset.id).remove();
+        showStatus('Track removed', 'success');
+      } catch (err) {
+        showStatus('Failed to remove: ' + err.message, 'error');
+      }
+    });
+  });
+});
+</script>
+</body>
+</html>
